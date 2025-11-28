@@ -1,51 +1,44 @@
 import js from '@eslint/js';
-import globals from 'globals';
-import reactHooks from 'eslint-plugin-react-hooks';
-import reactRefresh from 'eslint-plugin-react-refresh';
 import tseslint from 'typescript-eslint';
 import { defineConfig, globalIgnores } from 'eslint/config';
 
 export default defineConfig([
   globalIgnores(['dist', 'node_modules']),
   {
-    files: ['**/*.{ts,tsx}'],
+    files: ['**/*.{ts,js}'],
     extends: [
       js.configs.recommended,
-      ...tseslint.configs.recommended,
-      // Note: Removed stylisticTypeChecked to reduce strictness
+      ...tseslint.configs.recommendedTypeChecked,
+      ...tseslint.configs.stylisticTypeChecked,
     ],
     languageOptions: {
       ecmaVersion: 2020,
-      globals: globals.browser,
       parserOptions: {
         projectService: true,
         tsconfigRootDir: import.meta.dirname,
       },
     },
-    plugins: {
-      'react-hooks': reactHooks,
-      'react-refresh': reactRefresh,
-    },
     rules: {
-      // React-specific rules
-      ...reactHooks.configs.recommended.rules,
-      'react-refresh/only-export-components': [
-        'warn',
-        { allowConstantExport: true },
+      // Enforce explicit return types (per CLAUDE.md requirement)
+      '@typescript-eslint/explicit-function-return-type': [
+        'error',
+        {
+          allowExpressions: false,
+          allowTypedFunctionExpressions: true,
+          allowHigherOrderFunctions: true,
+          allowDirectConstAssertionInArrowFunctions: true,
+        },
       ],
 
-      // Relaxed return type enforcement for React components
-      '@typescript-eslint/explicit-function-return-type': 'off',
-      '@typescript-eslint/explicit-module-boundary-types': 'off',
+      // Enforce explicit module boundary types
+      '@typescript-eslint/explicit-module-boundary-types': 'error',
 
-      // Core type safety (keep these)
+      // Strict type safety
       '@typescript-eslint/no-explicit-any': 'error',
-
-      // Disable unsafe rules that conflict with React/JSX
-      '@typescript-eslint/no-unsafe-assignment': 'off',
-      '@typescript-eslint/no-unsafe-call': 'off',
-      '@typescript-eslint/no-unsafe-member-access': 'off',
-      '@typescript-eslint/no-unsafe-return': 'off',
+      '@typescript-eslint/no-unsafe-assignment': 'error',
+      '@typescript-eslint/no-unsafe-call': 'error',
+      '@typescript-eslint/no-unsafe-member-access': 'error',
+      '@typescript-eslint/no-unsafe-return': 'error',
 
       // Prevent unused variables
       '@typescript-eslint/no-unused-vars': [
@@ -57,24 +50,34 @@ export default defineConfig([
         },
       ],
 
-      // Relaxed naming conventions for React
+      // Naming conventions (per CLAUDE.md patterns)
       '@typescript-eslint/naming-convention': [
         'error',
+        // Functions: camelCase
         {
           selector: 'function',
-          format: ['camelCase', 'PascalCase'],
+          format: ['camelCase'],
+          leadingUnderscore: 'allow',
         },
+        // Variables: camelCase or UPPER_CASE for constants
         {
           selector: 'variable',
-          format: ['camelCase', 'UPPER_CASE', 'PascalCase'],
+          format: ['camelCase', 'UPPER_CASE'],
+          leadingUnderscore: 'allow',
         },
+        // Types/Interfaces: PascalCase
         {
           selector: 'typeLike',
           format: ['PascalCase'],
         },
+        // Enum members: PascalCase or UPPER_CASE
+        {
+          selector: 'enumMember',
+          format: ['PascalCase', 'UPPER_CASE'],
+        },
       ],
 
-      // Keep type imports consistent
+      // Require consistent type imports
       '@typescript-eslint/consistent-type-imports': [
         'error',
         {
