@@ -19,6 +19,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "shared": "workspace:*",
     "@types/express": "^5.0.5",
     "drizzle-orm": "^0.44.7",
     "express": "^5.1.0",
