@@ -19,6 +19,7 @@
     "typescript": "^5"
   },
   "dependencies": {
+    "@types/express": "^5.0.5",
     "drizzle-orm": "^0.44.7",
     "express": "^5.1.0",
     "postgres": "^3.4.7",
