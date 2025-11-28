@@ -14,7 +14,7 @@ export default defineConfig([
     languageOptions: {
       ecmaVersion: 2020,
       parserOptions: {
-        projectService: true,
+        project: './tsconfig.json',
         tsconfigRootDir: import.meta.dirname,
       },
     },
