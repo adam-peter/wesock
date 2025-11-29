@@ -1,5 +1,5 @@
 # Use the official Bun image
-FROM oven/bun:1 as base
+FROM oven/bun:1.2.4 as base
 WORKDIR /app
 
 # 1. Copy root package files
