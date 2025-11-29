@@ -14,7 +14,7 @@ interface APIConfig {
 export const config: APIConfig = {
   platform: envOrThrow('PLATFORM'),
   db: {
-    url: envOrThrow('DB_URL'),
+    url: envOrThrow('DATABASE_URL'),
     migrationConfig: {
       migrationsFolder: './src/db/migrations',
     },
