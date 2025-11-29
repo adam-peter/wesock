@@ -1,9 +1,10 @@
-function App() {
+import { PLACEHOLDER } from 'shared';
+
+export default function App() {
   return (
     <div>
-      <h1 className="text-3xl font-bold underline">    Hello world!  </h1>
+      <h1 className="text-xl">Hello! :D</h1>
+      <p>{PLACEHOLDER}</p>
     </div>
   );
 }
-
-export default App;
