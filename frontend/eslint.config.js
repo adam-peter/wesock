@@ -41,6 +41,14 @@ export default defineConfig([
       // Core type safety (keep these)
       '@typescript-eslint/no-explicit-any': 'error',
 
+      // Allow ts-ignore for library compatibility issues
+      '@typescript-eslint/ban-ts-comment': [
+        'error',
+        {
+          'ts-ignore': 'allow-with-description',
+        },
+      ],
+
       // Disable unsafe rules that conflict with React/JSX
       '@typescript-eslint/no-unsafe-assignment': 'off',
       '@typescript-eslint/no-unsafe-call': 'off',

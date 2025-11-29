@@ -6,7 +6,7 @@ import tailwindcss from '@tailwindcss/vite';
 export default defineConfig({
   plugins: [
     react(),
-    //@ts-expect-error Tailwind uses outdated types of vite 6 - remove this after update
+    // @ts-ignore Tailwind uses outdated types of vite 6 - remove this after update
     tailwindcss()
   ],
 });
