@@ -10,6 +10,7 @@ interface DBConfig {
 interface APIConfig {
   platform: Platform;
   db: DBConfig;
+  allowedOrigins: string[];
 }
 
 export const config: APIConfig = {
@@ -20,4 +21,5 @@ export const config: APIConfig = {
       migrationsFolder: './src/db/migrations',
     },
   },
+  allowedOrigins: envOrThrow('ALLOWED_ORIGINS').split(',').map(origin => origin.trim()),
 };
