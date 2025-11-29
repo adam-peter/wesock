@@ -1,8 +1,6 @@
 import type { MigrationConfig } from 'drizzle-orm/migrator';
 import { envOrThrow } from 'shared';
 
-process.loadEnvFile();
-
 interface DBConfig {
   url: string;
   migrationConfig: MigrationConfig;

@@ -9,9 +9,9 @@ export const messageSchema = z
     senderNick: z.string().min(1).max(MAX_NICKNAME_LENGTH),
     roomId: z.string().default(DEFAULT_ROOM),
   })
-  .merge(timestampsSchema);
+  .extend(timestampsSchema.shape);
 
-export const serializedMessageSchema = messageSchema.extend(serializedTimestampsSchema);
+export const serializedMessageSchema = messageSchema.extend(serializedTimestampsSchema.shape);
 
 export const sendMessageDtoSchema = serializedMessageSchema
   .omit({ id: true, createdAt: true, updatedAt: true })
