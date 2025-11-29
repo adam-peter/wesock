@@ -1,4 +1,6 @@
-# Wesock
+# 🧵 WeSock
+
+![WeSock](wesock.png)
 
 WeSock is a FOSS real-time chat application built to be accessible and freely usable for everyone. It is built with a modern TypeScript stack, utilizing scalable WebSocket patterns, strict type safety, and a clean monorepo architecture.
 
