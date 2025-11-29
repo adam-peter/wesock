@@ -1,18 +1,20 @@
 import { useState } from 'react';
 import { useNavigate } from 'react-router';
-import { Button } from '../../components/ui/button';
-import { Input } from '../../components/ui/input';
+import { Button } from '../components/ui/button';
+import { Input } from '../components/ui/input';
 import {
   Card,
   CardContent,
   CardDescription,
   CardHeader,
   CardTitle,
-} from '../../components/ui/card';
+} from '../components/ui/card';
 
-export function LandingPage() {
+export function RootPage() {
   const navigate = useNavigate();
-  const [nickname, setNickname] = useState(localStorage.getItem('nickname') || '');
+  const [nickname, setNickname] = useState(
+    localStorage.getItem('nickname') || ''
+  );
   const [error, setError] = useState('');
 
   function saveNickname(): boolean {
@@ -49,18 +51,15 @@ export function LandingPage() {
       <Card className="w-full max-w-md">
         <CardHeader className="text-center">
           <div className="flex justify-center mb-4">
-             {/* WeSock Logo Placeholder */}
-             <div className="h-16 w-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-2xl">
-               WS
-             </div>
+            <div className="h-16 w-16 bg-primary rounded-full flex items-center justify-center text-primary-foreground font-bold text-2xl pt-1.5">
+              WS
+            </div>
           </div>
           <CardTitle className="text-2xl">WeSock</CardTitle>
-          <CardDescription>
-            Real-time chat for everyone
-          </CardDescription>
+          <CardDescription>Real-time chatrooms for Everyone!</CardDescription>
         </CardHeader>
         <CardContent>
-          <form onSubmit={handleJoinGlobal} className="space-y-4">
+          <form onSubmit={handleJoinGlobal} className="space-y-3">
             <div>
               <Input
                 type="text"
@@ -68,35 +67,39 @@ export function LandingPage() {
                 value={nickname}
                 onChange={(e) => {
                   setNickname(e.target.value);
-                  if (e.target.value.trim()) {setError('');}
+                  if (e.target.value.trim()) {
+                    setError('');
+                  }
                 }}
                 maxLength={50}
-                className={error ? "border-red-500" : ""}
+                className={error ? 'border-red-500' : ''}
               />
               {error && <p className="text-red-500 text-sm mt-1">{error}</p>}
             </div>
-            
-            <Button type="submit" className="w-full" size="lg">
-              Join Global Room
-            </Button>
 
-            <div className="flex gap-2 pt-2">
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="flex-1"
-                onClick={handleCreatePersonal}
-              >
-                Create Personal Room
+            <div className="flex flex-col gap-3 pt-2">
+              <Button type="submit" className="w-full" size="lg">
+                Join Global Room
               </Button>
-              <Button 
-                type="button" 
-                variant="outline" 
-                className="flex-1"
-                onClick={handleJoinPersonal}
-              >
-                Join Personal Room
-              </Button>
+
+              <div className="flex gap-3">
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleCreatePersonal}
+                >
+                  Create Personal Room
+                </Button>
+                <Button
+                  type="button"
+                  variant="outline"
+                  className="flex-1"
+                  onClick={handleJoinPersonal}
+                >
+                  Join Personal Room
+                </Button>
+              </div>
             </div>
           </form>
         </CardContent>
