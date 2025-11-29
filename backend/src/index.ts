@@ -6,10 +6,6 @@ import { config } from './config';
 const PORT = 3000;
 const app = express();
 
-app.get('/healthz', (_req, res) => {
-  res.status(200).send({ status: 'ok' });
-});
-
 app.use((req, res, next) => {
   if (req.path === '/healthz') {
     return next();
@@ -35,6 +31,10 @@ app.use((req, res, next) => {
 });
 
 app.use(express.json());
+
+app.get('/healthz', (_req, res) => {
+  res.status(200).send({ status: 'ok' });
+});
 
 app.get('/', (_req, res) => {
   res.status(200).send({message: PLACEHOLDER, from: `From: ${config.platform}`});
