@@ -3,7 +3,7 @@ FROM oven/bun:1 as base
 WORKDIR /app
 
 # 1. Copy root package files
-COPY package.json bun.lockb ./
+COPY package.json bun.lock ./
 
 # 2. Copy the necessary folders
 # We do NOT need to copy 'frontend' for the backend server
