@@ -2,6 +2,7 @@ import express from 'express';
 import cors from 'cors';
 import { PLACEHOLDER } from 'shared';
 import { config } from './config';
+import { middlewareErrors } from './middleware/errors';
 
 const PORT = 3000;
 const app = express();
@@ -39,6 +40,8 @@ app.get('/healthz', (_req, res) => {
 app.get('/', (_req, res) => {
   res.status(200).send({message: PLACEHOLDER, from: `From: ${config.platform}`});
 });
+
+app.use(middlewareErrors);
 
 app.listen(PORT, () => {
   console.log(`Server is running at port ${PORT}`);
