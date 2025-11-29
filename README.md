@@ -1,8 +1,8 @@
 # Wesock
 
-Wesock is a FOSS real-time chat application built to be accessible and freely usable for everyone. It is built with a modern TypeScript stack, utilizing scalable WebSocket patterns, strict type safety, and a clean monorepo architecture.
+WeSock is a FOSS real-time chat application built to be accessible and freely usable for everyone. It is built with a modern TypeScript stack, utilizing scalable WebSocket patterns, strict type safety, and a clean monorepo architecture.
 
-It features ephemeral users, persistent room history, and real-time updates, all powered by a robust event-driven backend.
+WeSock features ephemeral users, persistent room history, and real-time updates, all powered by a robust event-driven backend.
 
 ## 🚀 Tech Stack
 

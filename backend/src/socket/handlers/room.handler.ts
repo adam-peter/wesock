@@ -33,16 +33,7 @@ async function handleJoinRoom(
   callback?: (error?: string) => void
 ): Promise<void> {
   try {
-    const parseResult = joinRoomDtoSchema.safeParse(data);
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.issues[0]?.message ?? 'Validation failed';
-      console.error('Validation error in join_room:', parseResult.error);
-      callback?.(errorMessage);
-      return;
-    }
-
-    const dto = parseResult.data;
+    const dto = joinRoomDtoSchema.parse(data);
 
     const user: OnlineUser = {
       id: socket.id,
@@ -54,35 +45,19 @@ async function handleJoinRoom(
     await socket.join(dto.roomId);
 
     const roomUsers = getUsersByRoom(dto.roomId);
-    const userListPayloadResult = userListUpdatePayloadSchema.safeParse({
+    const userListPayload = userListUpdatePayloadSchema.parse({
       users: roomUsers,
     });
-
-    if (userListPayloadResult.success) {
-      io.to(dto.roomId).emit('user_list_update', userListPayloadResult.data);
-    } else {
-      console.error('User list payload validation error:', userListPayloadResult.error);
-    }
+    io.to(dto.roomId).emit('user_list_update', userListPayload);
 
     const dbMessages = await loadMessageHistory(dto.roomId);
     const serializedMessages = serializeMessages(dbMessages);
-
-    const historyPayloadResult = loadHistoryPayloadSchema.safeParse(serializedMessages.reverse());
-
-    if (historyPayloadResult.success) {
-      socket.emit('load_history', historyPayloadResult.data);
-    } else {
-      console.error('History payload validation error:', historyPayloadResult.error);
-    }
+    const historyPayload = loadHistoryPayloadSchema.parse(serializedMessages.reverse());
+    socket.emit('load_history', historyPayload);
 
     const systemMessage = createSystemMessage(`${dto.nick} joined`, dto.roomId);
-    const systemMessagePayloadResult = receiveMessagePayloadSchema.safeParse(systemMessage);
-
-    if (systemMessagePayloadResult.success) {
-      io.to(dto.roomId).emit('receive_message', systemMessagePayloadResult.data);
-    } else {
-      console.error('System message payload validation error:', systemMessagePayloadResult.error);
-    }
+    const systemMessagePayload = receiveMessagePayloadSchema.parse(systemMessage);
+    io.to(dto.roomId).emit('receive_message', systemMessagePayload);
 
     callback?.();
   } catch (err) {
@@ -93,30 +68,24 @@ async function handleJoinRoom(
 }
 
 function handleDisconnect(io: TypedServer, socket: TypedSocket): void {
-  console.log(`Client disconnected: ${socket.id}`);
+  try {
+    console.log(`Client disconnected: ${socket.id}`);
 
-  const user = removeUser(socket.id);
-  if (!user) {
-    return;
-  }
+    const user = removeUser(socket.id);
+    if (!user) {
+      return;
+    }
 
-  const roomUsers = getUsersByRoom(user.roomId);
-  const userListPayloadResult = userListUpdatePayloadSchema.safeParse({
-    users: roomUsers,
-  });
+    const roomUsers = getUsersByRoom(user.roomId);
+    const userListPayload = userListUpdatePayloadSchema.parse({
+      users: roomUsers,
+    });
+    io.to(user.roomId).emit('user_list_update', userListPayload);
 
-  if (userListPayloadResult.success) {
-    io.to(user.roomId).emit('user_list_update', userListPayloadResult.data);
-  } else {
-    console.error('User list payload validation error:', userListPayloadResult.error);
-  }
-
-  const systemMessage = createSystemMessage(`${user.nick} left`, user.roomId);
-  const systemMessagePayloadResult = receiveMessagePayloadSchema.safeParse(systemMessage);
-
-  if (systemMessagePayloadResult.success) {
-    io.to(user.roomId).emit('receive_message', systemMessagePayloadResult.data);
-  } else {
-    console.error('System message payload validation error:', systemMessagePayloadResult.error);
+    const systemMessage = createSystemMessage(`${user.nick} left`, user.roomId);
+    const systemMessagePayload = receiveMessagePayloadSchema.parse(systemMessage);
+    io.to(user.roomId).emit('receive_message', systemMessagePayload);
+  } catch (err) {
+    console.error('Error in handleDisconnect:', err);
   }
 }

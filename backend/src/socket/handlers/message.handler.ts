@@ -33,31 +33,15 @@ async function handleSendMessage(
   callback?: (error?: string) => void
 ): Promise<void> {
   try {
-    const parseResult = sendMessageDtoSchema.safeParse(data);
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.issues[0]?.message ?? 'Validation failed';
-      console.error('Validation error in send_message:', parseResult.error);
-      callback?.(errorMessage);
-      return;
-    }
-
-    const dto = parseResult.data;
+    const dto = sendMessageDtoSchema.parse(data);
 
     const isGlobal = dto.roomId === DEFAULT_ROOM;
     const dbMessage = await saveMessage(dto.content, dto.senderNick, dto.roomId, isGlobal);
 
     const serializedMessage = serializeMessage(dbMessage);
+    const payload = receiveMessagePayloadSchema.parse(serializedMessage);
 
-    const payloadResult = receiveMessagePayloadSchema.safeParse(serializedMessage);
-
-    if (!payloadResult.success) {
-      console.error('Payload validation error:', payloadResult.error);
-      callback?.('Failed to process message');
-      return;
-    }
-
-    io.to(dto.roomId).emit('receive_message', payloadResult.data);
+    io.to(dto.roomId).emit('receive_message', payload);
     callback?.();
   } catch (err) {
     console.error('Error in handleSendMessage:', err);
@@ -72,16 +56,7 @@ async function handleLoadMoreMessages(
   callback?: (error?: string) => void
 ): Promise<void> {
   try {
-    const parseResult = loadMoreMessagesDtoSchema.safeParse(data);
-
-    if (!parseResult.success) {
-      const errorMessage = parseResult.error.issues[0]?.message ?? 'Validation failed';
-      console.error('Validation error in load_more_messages:', parseResult.error);
-      callback?.(errorMessage);
-      return;
-    }
-
-    const dto = parseResult.data;
+    const dto = loadMoreMessagesDtoSchema.parse(data);
     const limit = dto.limit ?? MESSAGE_HISTORY_LIMIT;
 
     const dbMessages = await loadMessageHistory(dto.roomId, limit + 1, dto.offset);
@@ -89,18 +64,12 @@ async function handleLoadMoreMessages(
     const messagesToSend = hasMore ? dbMessages.slice(0, limit) : dbMessages;
     const serializedMessages = serializeMessages(messagesToSend);
 
-    const payloadResult = loadMoreMessagesPayloadSchema.safeParse({
+    const payload = loadMoreMessagesPayloadSchema.parse({
       messages: serializedMessages.reverse(),
       hasMore,
     });
 
-    if (!payloadResult.success) {
-      console.error('Payload validation error:', payloadResult.error);
-      callback?.('Failed to load messages');
-      return;
-    }
-
-    socket.emit('load_more_messages_response', payloadResult.data);
+    socket.emit('load_more_messages_response', payload);
     callback?.();
   } catch (err) {
     console.error('Error in handleLoadMoreMessages:', err);
