@@ -1,12 +1,8 @@
 import { ScrollArea } from './ui/scroll-area';
-
-interface User {
-  id: string;
-  nick: string;
-}
+import type { OnlineUser } from 'shared';
 
 interface UserListProps {
-  users: User[];
+  users: OnlineUser[];
 }
 
 export function UserList({ users }: UserListProps) {

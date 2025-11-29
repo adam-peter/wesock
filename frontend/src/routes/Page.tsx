@@ -2,23 +2,25 @@ import { useEffect, useState } from 'react';
 import { useNavigate } from 'react-router';
 import { socket } from '../lib/socket';
 import { ChatLayout } from '../components/ChatLayout';
-import type { SerializedMessage } from 'shared';
-
-const DUMMY_USERS = [
-  { id: '1', nick: 'Alice' },
-  { id: '2', nick: 'Bob' },
-  { id: '3', nick: 'Charlie' },
-];
+import type { SerializedMessage, OnlineUser } from 'shared';
 
 export default function RootPage() {
   const navigate = useNavigate();
   const nickname = localStorage.getItem('nickname');
   const [messages, setMessages] = useState<SerializedMessage[]>([]);
-  const [users] = useState(DUMMY_USERS);
+  const [users, setUsers] = useState<OnlineUser[]>([]);
 
   useEffect(() => {
     function onConnect(): void {
       console.log(`Connected with ID: ${socket.id}`);
+
+      if (nickname) {
+        socket.emit('join_room', { nick: nickname, roomId: 'global' }, (error?: string) => {
+          if (error) {
+            console.error('Failed to join room:', error);
+          }
+        });
+      }
     }
 
     function onDisconnect(): void {
@@ -29,9 +31,19 @@ export default function RootPage() {
       setMessages((prev) => [...prev, message]);
     }
 
+    function onUserListUpdate(data: { users: OnlineUser[] }): void {
+      setUsers(data.users);
+    }
+
+    function onLoadHistory(history: SerializedMessage[]): void {
+      setMessages(history);
+    }
+
     socket.on('connect', onConnect);
     socket.on('disconnect', onDisconnect);
     socket.on('receive_message', onReceiveMessage);
+    socket.on('user_list_update', onUserListUpdate);
+    socket.on('load_history', onLoadHistory);
 
     socket.connect();
 
@@ -39,9 +51,11 @@ export default function RootPage() {
       socket.off('connect', onConnect);
       socket.off('disconnect', onDisconnect);
       socket.off('receive_message', onReceiveMessage);
+      socket.off('user_list_update', onUserListUpdate);
+      socket.off('load_history', onLoadHistory);
       socket.disconnect();
     };
-  }, []);
+  }, [nickname]);
 
   function handleLogout(): void {
     localStorage.removeItem('nickname');

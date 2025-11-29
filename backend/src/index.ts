@@ -2,10 +2,18 @@ import express from 'express';
 import { createServer } from 'http';
 import { Server } from 'socket.io';
 import cors from 'cors';
-import { PLACEHOLDER, sendMessageDtoSchema, type SerializedMessage } from 'shared';
+import {
+  PLACEHOLDER,
+  sendMessageDtoSchema,
+  joinRoomDtoSchema,
+  MESSAGE_TTL_HOURS,
+  type SerializedMessage,
+  type OnlineUser,
+} from 'shared';
 import { config } from './config';
 import { middlewareErrors } from './middleware/errors';
-import { randomUUID } from 'crypto';
+import './db';
+import { createMessage, getMessages, deleteOldMessages } from './db/queries/messages';
 
 const PORT = 3000;
 const app = express();
@@ -17,6 +25,8 @@ const io = new Server(server, {
   },
   connectionStateRecovery: {},
 });
+
+const onlineUsers: OnlineUser[] = [];
 
 app.use((req, res, next) => {
   if (req.path === '/healthz') {
@@ -57,20 +67,55 @@ app.use(middlewareErrors);
 io.on('connection', (socket) => {
   console.log(`Client connected: ${socket.id}`);
 
-  socket.on('send_message', (data: unknown, callback?: (error?: string) => void) => {
+  socket.on('join_room', async (data: unknown, callback?: (error?: string) => void) => {
+    try {
+      const dto = joinRoomDtoSchema.parse(data);
+
+      const user: OnlineUser = {
+        id: socket.id,
+        nick: dto.nick,
+        roomId: dto.roomId,
+      };
+
+      onlineUsers.push(user);
+      await socket.join(dto.roomId);
+
+      io.to(dto.roomId).emit('user_list_update', { users: onlineUsers.filter(u => u.roomId === dto.roomId) });
+
+      const dbMessages = await getMessages();
+      const serializedMessages: SerializedMessage[] = dbMessages.map(msg => ({
+        id: msg.id,
+        content: msg.content,
+        senderNick: msg.senderNick,
+        roomId: msg.roomId,
+        createdAt: msg.createdAt.toISOString(),
+        updatedAt: msg.updatedAt.toISOString(),
+      }));
+      socket.emit('load_history', serializedMessages.reverse());
+
+      callback?.();
+    } catch (err) {
+      console.error('Error in join_room handler:', err);
+      callback?.(err instanceof Error ? err.message : 'Unknown error');
+    }
+  });
+
+  socket.on('send_message', async (data: unknown, callback?: (error?: string) => void) => {
     try {
       const dto = sendMessageDtoSchema.parse(data);
 
+      const dbMessage = await createMessage(dto.content, dto.senderNick, dto.roomId);
+
       const message: SerializedMessage = {
-        id: randomUUID(),
-        content: dto.content,
-        senderNick: dto.senderNick,
-        roomId: dto.roomId,
-        createdAt: new Date().toISOString(),
-        updatedAt: new Date().toISOString(),
+        id: dbMessage.id,
+        content: dbMessage.content,
+        senderNick: dbMessage.senderNick,
+        roomId: dbMessage.roomId,
+        createdAt: dbMessage.createdAt.toISOString(),
+        updatedAt: dbMessage.updatedAt.toISOString(),
       };
 
-      io.emit('receive_message', message);
+      io.to(dto.roomId).emit('receive_message', message);
       callback?.();
     } catch (err) {
       console.error('Error in send_message handler:', err);
@@ -80,8 +125,23 @@ io.on('connection', (socket) => {
 
   socket.on('disconnect', () => {
     console.log(`Client disconnected: ${socket.id}`);
+
+    const userIndex = onlineUsers.findIndex(u => u.id === socket.id);
+    if (userIndex !== -1) {
+      const user = onlineUsers[userIndex];
+      onlineUsers.splice(userIndex, 1);
+      io.to(user.roomId).emit('user_list_update', { users: onlineUsers.filter(u => u.roomId === user.roomId) });
+    }
   });
 });
+
+setInterval(() => {
+  void (async (): Promise<void> => {
+    const cutoffDate = new Date(Date.now() - MESSAGE_TTL_HOURS * 60 * 60 * 1000);
+    await deleteOldMessages(cutoffDate);
+    console.log(`Cleaned up messages older than ${MESSAGE_TTL_HOURS} hours`);
+  })();
+}, 1000 * 60 * 60);
 
 server.listen(PORT, () => {
   console.log(`Server is running at port ${PORT}`);

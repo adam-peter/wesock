@@ -3,12 +3,12 @@ import { Button } from './ui/button';
 import { Input } from './ui/input';
 import { MessageList } from './MessageList';
 import { UserList } from './UserList';
-import type { SerializedMessage } from 'shared';
+import type { SerializedMessage, OnlineUser } from 'shared';
 
 interface ChatLayoutProps {
   nickname: string;
   messages: SerializedMessage[];
-  users: Array<{ id: string; nick: string }>;
+  users: OnlineUser[];
   onSendMessage: (content: string) => void;
   onLogout: () => void;
 }
