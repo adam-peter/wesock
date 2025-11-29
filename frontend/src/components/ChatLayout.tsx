@@ -4,6 +4,7 @@ import { Input } from './ui/input';
 import { MessageList } from './MessageList';
 import { UserList } from './UserList';
 import type { SerializedMessage, OnlineUser } from 'shared';
+import { ModeToggle } from './mode-toggle';
 
 interface ChatLayoutProps {
   nickname: string;
@@ -13,7 +14,13 @@ interface ChatLayoutProps {
   onLogout: () => void;
 }
 
-export function ChatLayout({ nickname, messages, users, onSendMessage, onLogout }: ChatLayoutProps) {
+export function ChatLayout({
+  nickname,
+  messages,
+  users,
+  onSendMessage,
+  onLogout,
+}: ChatLayoutProps) {
   const [messageInput, setMessageInput] = useState('');
 
   function handleSubmit(e: React.FormEvent): void {
@@ -34,8 +41,9 @@ export function ChatLayout({ nickname, messages, users, onSendMessage, onLogout 
       </div>
 
       <div className="w-[70%] flex flex-col bg-background">
-        <div className="border-b bg-background p-4">
+        <div className="border-b bg-background p-4 flex justify-between">
           <h3 className="font-semibold">Welcome, {nickname}</h3>
+          <ModeToggle />
         </div>
 
         <MessageList messages={messages} />
