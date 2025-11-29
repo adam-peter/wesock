@@ -6,6 +6,10 @@ import { config } from './config';
 const PORT = 3000;
 const app = express();
 
+app.get('/healthz', (_req, res) => {
+  res.status(200).send({ status: 'ok' });
+});
+
 app.use(cors({
   origin: (origin, callback) => {
     if (!origin) {
