@@ -1,4 +1,10 @@
-import { useRef, useEffect, useState, useCallback } from 'react';
+import {
+  useRef,
+  useEffect,
+  useState,
+  useCallback,
+  useLayoutEffect,
+} from 'react';
 import { ScrollArea } from './ui/scroll-area';
 import { Skeleton } from './ui/skeleton';
 import { socket } from '../lib/socket';
@@ -10,13 +16,32 @@ interface MessageListProps {
   onLoadMore: (messages: SerializedMessage[]) => void;
 }
 
-export function MessageList({ messages, roomId, onLoadMore }: MessageListProps) {
+export function MessageList({
+  messages,
+  roomId,
+  onLoadMore,
+}: MessageListProps) {
   const scrollAreaRef = useRef<HTMLDivElement>(null);
+  const viewportRef = useRef<HTMLDivElement | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const topObserverRef = useRef<HTMLDivElement>(null);
+  const lastMessageIdRef = useRef<string | null>(null);
+  const previousScrollHeightRef = useRef<number>(0);
+  const isLoadingMoreRef = useRef<boolean>(false);
   const [isLoadingMore, setIsLoadingMore] = useState(false);
   const [hasMore, setHasMore] = useState(true);
   const [isInitialLoad, setIsInitialLoad] = useState(true);
+
+  useEffect(() => {
+    if (scrollAreaRef.current) {
+      const viewport = scrollAreaRef.current.querySelector(
+        '[data-radix-scroll-area-viewport]'
+      );
+      if (viewport) {
+        viewportRef.current = viewport as HTMLDivElement;
+      }
+    }
+  }, []);
 
   const scrollToBottom = useCallback((): void => {
     messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
@@ -27,22 +52,35 @@ export function MessageList({ messages, roomId, onLoadMore }: MessageListProps) 
       setTimeout(() => {
         messagesEndRef.current?.scrollIntoView({ behavior: 'instant' });
         setIsInitialLoad(false);
+        lastMessageIdRef.current = messages[messages.length - 1]?.id;
       }, 100);
     }
-  }, [messages.length, isInitialLoad]);
+  }, [messages.length, isInitialLoad, messages]);
 
   useEffect(() => {
-    if (!isInitialLoad && messages.length > 0 && !isLoadingMore) {
+    const currentLastMessageId = messages[messages.length - 1]?.id;
+
+    if (
+      !isInitialLoad &&
+      currentLastMessageId &&
+      currentLastMessageId !== lastMessageIdRef.current
+    ) {
       scrollToBottom();
+      lastMessageIdRef.current = currentLastMessageId;
     }
-  }, [messages.length, scrollToBottom, isInitialLoad, isLoadingMore]);
+  }, [messages, scrollToBottom, isInitialLoad]);
 
   const loadMoreMessages = useCallback((): void => {
     if (isLoadingMore || !hasMore) {
       return;
     }
 
+    if (viewportRef.current) {
+      previousScrollHeightRef.current = viewportRef.current.scrollHeight;
+    }
+
     setIsLoadingMore(true);
+    isLoadingMoreRef.current = true;
 
     socket.emit(
       'load_more_messages',
@@ -54,10 +92,31 @@ export function MessageList({ messages, roomId, onLoadMore }: MessageListProps) 
         if (error) {
           console.error('Failed to load more messages:', error);
           setIsLoadingMore(false);
+          isLoadingMoreRef.current = false;
         }
       }
     );
   }, [isLoadingMore, hasMore, roomId, messages.length]);
+
+  useLayoutEffect(() => {
+    if (
+      isLoadingMoreRef.current &&
+      viewportRef.current &&
+      previousScrollHeightRef.current > 0
+    ) {
+      const currentScrollHeight = viewportRef.current.scrollHeight;
+      const heightDifference =
+        currentScrollHeight - previousScrollHeightRef.current;
+
+      if (heightDifference > 0) {
+        viewportRef.current.scrollTop =
+          viewportRef.current.scrollTop + heightDifference;
+      }
+
+      isLoadingMoreRef.current = false;
+      previousScrollHeightRef.current = 0;
+    }
+  }, [messages]);
 
   useEffect(() => {
     function handleLoadMoreResponse(data: LoadMoreMessagesPayload): void {
@@ -76,7 +135,12 @@ export function MessageList({ messages, roomId, onLoadMore }: MessageListProps) 
   useEffect(() => {
     const observer = new IntersectionObserver(
       (entries) => {
-        if (entries[0]?.isIntersecting && !isLoadingMore && hasMore && messages.length > 0) {
+        if (
+          entries[0]?.isIntersecting &&
+          !isLoadingMore &&
+          hasMore &&
+          messages.length > 0
+        ) {
           loadMoreMessages();
         }
       },
@@ -109,7 +173,9 @@ export function MessageList({ messages, roomId, onLoadMore }: MessageListProps) 
 
         {messages.map((msg) => (
           <div key={msg.id} className="bg-muted/50 rounded-lg p-3">
-            <div className="font-semibold text-sm text-primary">{msg.senderNick}</div>
+            <div className="font-semibold text-sm text-primary">
+              {msg.senderNick}
+            </div>
             <div className="text-foreground mt-1">{msg.content}</div>
             <div className="text-xs text-muted-foreground mt-1">
               {new Date(msg.createdAt).toLocaleTimeString()}
