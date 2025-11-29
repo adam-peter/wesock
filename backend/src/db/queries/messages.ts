@@ -1,7 +1,7 @@
 import { desc, lt } from 'drizzle-orm';
 import { db } from '..';
-import { type Message, messages } from '../schema';
-import { MESSAGE_HISTORY_LIMIT } from 'shared';
+import { messages } from '../schemas/message';
+import { MESSAGE_HISTORY_LIMIT, messageSchema, type Message } from 'shared';
 
 export async function createMessage(
   content: string,
@@ -16,15 +16,18 @@ export async function createMessage(
       roomId,
     })
     .returning();
-  return result;
+
+  return messageSchema.parse(result);
 }
 
 export async function getMessages(limit: number = MESSAGE_HISTORY_LIMIT): Promise<Message[]> {
-  return await db
+  const result = await db
     .select()
     .from(messages)
     .orderBy(desc(messages.createdAt))
     .limit(limit);
+
+  return messageSchema.array().parse(result);
 }
 
 export async function deleteOldMessages(olderThan: Date): Promise<void> {

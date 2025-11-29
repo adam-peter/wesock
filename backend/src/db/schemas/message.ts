@@ -16,6 +16,3 @@ export const messages = pgTable('messages', {
   roomId: text('room_id').notNull().default(DEFAULT_ROOM),
   ...timestamps,
 });
-
-export type Message = typeof messages.$inferSelect;
-export type CreateMessage = typeof messages.$inferInsert;
