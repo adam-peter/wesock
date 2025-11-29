@@ -1,7 +1,7 @@
 import { useEffect, useState } from 'react';
-import { socket } from './lib/socket';
-import { LoginScreen } from './components/LoginScreen';
-import { ChatLayout } from './components/ChatLayout';
+import { useNavigate } from 'react-router';
+import { socket } from '../lib/socket';
+import { ChatLayout } from '../components/ChatLayout';
 import type { SerializedMessage } from 'shared';
 
 const DUMMY_USERS = [
@@ -10,10 +10,9 @@ const DUMMY_USERS = [
   { id: '3', nick: 'Charlie' },
 ];
 
-export default function App() {
-  const [nickname, setNickname] = useState<string | null>(() => {
-    return localStorage.getItem('nickname');
-  });
+export default function RootPage() {
+  const navigate = useNavigate();
+  const nickname = localStorage.getItem('nickname');
   const [messages, setMessages] = useState<SerializedMessage[]>([]);
   const [users] = useState(DUMMY_USERS);
 
@@ -44,15 +43,10 @@ export default function App() {
     };
   }, []);
 
-  function handleJoin(nick: string): void {
-    localStorage.setItem('nickname', nick);
-    setNickname(nick);
-  }
-
   function handleLogout(): void {
     localStorage.removeItem('nickname');
-    setNickname(null);
     setMessages([]);
+    navigate('/login', { replace: true });
   }
 
   function handleSendMessage(content: string): void {
@@ -67,13 +61,9 @@ export default function App() {
     });
   }
 
-  if (!nickname) {
-    return <LoginScreen onJoin={handleJoin} />;
-  }
-
   return (
     <ChatLayout
-      nickname={nickname}
+      nickname={nickname!}
       messages={messages}
       users={users}
       onSendMessage={handleSendMessage}
