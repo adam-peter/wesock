@@ -1,5 +1,6 @@
 import { type Server, type Socket } from 'socket.io';
 import {
+  DEFAULT_ROOM,
   sendMessageDtoSchema,
   receiveMessagePayloadSchema,
   type ClientToServerEvents,
@@ -36,7 +37,8 @@ async function handleSendMessage(
 
     const dto = parseResult.data;
 
-    const dbMessage = await saveMessage(dto.content, dto.senderNick, dto.roomId);
+    const isGlobal = dto.roomId === DEFAULT_ROOM;
+    const dbMessage = await saveMessage(dto.content, dto.senderNick, dto.roomId, isGlobal);
 
     const serializedMessage = serializeMessage(dbMessage);
 

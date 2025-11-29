@@ -8,6 +8,7 @@ import { ModeToggle } from './mode-toggle';
 
 interface ChatLayoutProps {
   nickname: string;
+  roomId: string;
   messages: SerializedMessage[];
   users: OnlineUser[];
   onSendMessage: (content: string) => void;
@@ -16,12 +17,14 @@ interface ChatLayoutProps {
 
 export function ChatLayout({
   nickname,
+  roomId,
   messages,
   users,
   onSendMessage,
   onLogout,
 }: ChatLayoutProps) {
   const [messageInput, setMessageInput] = useState('');
+  const [copied, setCopied] = useState(false);
 
   function handleSubmit(e: React.FormEvent): void {
     e.preventDefault();
@@ -29,6 +32,12 @@ export function ChatLayout({
       onSendMessage(messageInput.trim());
       setMessageInput('');
     }
+  }
+
+  function copyRoomId() {
+    navigator.clipboard.writeText(roomId);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
   }
 
   return (
@@ -41,8 +50,19 @@ export function ChatLayout({
       </div>
 
       <div className="w-[70%] flex flex-col bg-background">
-        <div className="border-b bg-background p-4 flex justify-between">
+        <div className="border-b bg-background p-4 flex justify-between items-center">
           <h3 className="font-semibold">Welcome, {nickname}</h3>
+          
+          <div 
+            className="bg-muted px-3 py-1 rounded-full text-xs cursor-pointer hover:bg-muted/80 transition-colors flex items-center gap-2"
+            onClick={copyRoomId}
+            title="Click to copy Room ID"
+          >
+            <span className="opacity-50">Room:</span>
+            <span className="font-mono">{roomId}</span>
+            {copied && <span className="text-green-500 font-bold">Copied!</span>}
+          </div>
+
           <ModeToggle />
         </div>
 

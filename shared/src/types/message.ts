@@ -8,6 +8,7 @@ export const messageSchema = z
     content: z.string().min(1).max(MAX_MESSAGE_LENGTH),
     senderNick: z.string().min(1).max(MAX_NICKNAME_LENGTH),
     roomId: z.string().default(DEFAULT_ROOM),
+    isGlobal: z.boolean().default(false),
   })
   .extend(timestampsSchema.shape);
 

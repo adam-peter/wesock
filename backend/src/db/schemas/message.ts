@@ -1,4 +1,4 @@
-import { pgTable, text, timestamp, uuid } from 'drizzle-orm/pg-core';
+import { pgTable, text, timestamp, uuid, boolean } from 'drizzle-orm/pg-core';
 import { DEFAULT_ROOM } from 'shared';
 
 const timestamps = {
@@ -14,5 +14,6 @@ export const messages = pgTable('messages', {
   content: text('content').notNull(),
   senderNick: text('sender_nick').notNull(),
   roomId: text('room_id').notNull().default(DEFAULT_ROOM),
+  isGlobal: boolean('is_global').notNull().default(false),
   ...timestamps,
 });

@@ -63,7 +63,7 @@ async function handleJoinRoom(
       console.error('User list payload validation error:', userListPayloadResult.error);
     }
 
-    const dbMessages = await loadMessageHistory();
+    const dbMessages = await loadMessageHistory(dto.roomId);
     const serializedMessages = serializeMessages(dbMessages);
 
     const historyPayloadResult = loadHistoryPayloadSchema.safeParse(serializedMessages.reverse());
