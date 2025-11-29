@@ -6,9 +6,14 @@ import {
   PLACEHOLDER,
   sendMessageDtoSchema,
   joinRoomDtoSchema,
+  userListUpdatePayloadSchema,
+  loadHistoryPayloadSchema,
+  receiveMessagePayloadSchema,
   MESSAGE_TTL_HOURS,
   type SerializedMessage,
   type OnlineUser,
+  type ClientToServerEvents,
+  type ServerToClientEvents,
 } from 'shared';
 import { config } from './config';
 import { middlewareErrors } from './middleware/errors';
@@ -18,7 +23,7 @@ import { createMessage, getMessages, deleteOldMessages } from './db/queries/mess
 const PORT = 3000;
 const app = express();
 const server = createServer(app);
-const io = new Server(server, {
+const io = new Server<ClientToServerEvents, ServerToClientEvents>(server, {
   cors: {
     origin: config.allowedOrigins,
     credentials: true,
@@ -80,7 +85,10 @@ io.on('connection', (socket) => {
       onlineUsers.push(user);
       await socket.join(dto.roomId);
 
-      io.to(dto.roomId).emit('user_list_update', { users: onlineUsers.filter(u => u.roomId === dto.roomId) });
+      const userListPayload = userListUpdatePayloadSchema.parse({
+        users: onlineUsers.filter(u => u.roomId === dto.roomId)
+      });
+      io.to(dto.roomId).emit('user_list_update', userListPayload);
 
       const dbMessages = await getMessages();
       const serializedMessages: SerializedMessage[] = dbMessages.map(msg => ({
@@ -91,7 +99,8 @@ io.on('connection', (socket) => {
         createdAt: msg.createdAt.toISOString(),
         updatedAt: msg.updatedAt.toISOString(),
       }));
-      socket.emit('load_history', serializedMessages.reverse());
+      const loadHistoryPayload = loadHistoryPayloadSchema.parse(serializedMessages.reverse());
+      socket.emit('load_history', loadHistoryPayload);
 
       callback?.();
     } catch (err) {
@@ -115,7 +124,8 @@ io.on('connection', (socket) => {
         updatedAt: dbMessage.updatedAt.toISOString(),
       };
 
-      io.to(dto.roomId).emit('receive_message', message);
+      const receiveMessagePayload = receiveMessagePayloadSchema.parse(message);
+      io.to(dto.roomId).emit('receive_message', receiveMessagePayload);
       callback?.();
     } catch (err) {
       console.error('Error in send_message handler:', err);
@@ -130,7 +140,10 @@ io.on('connection', (socket) => {
     if (userIndex !== -1) {
       const user = onlineUsers[userIndex];
       onlineUsers.splice(userIndex, 1);
-      io.to(user.roomId).emit('user_list_update', { users: onlineUsers.filter(u => u.roomId === user.roomId) });
+      const userListPayload = userListUpdatePayloadSchema.parse({
+        users: onlineUsers.filter(u => u.roomId === user.roomId)
+      });
+      io.to(user.roomId).emit('user_list_update', userListPayload);
     }
   });
 });

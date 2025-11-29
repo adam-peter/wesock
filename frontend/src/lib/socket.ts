@@ -1,7 +1,8 @@
-import { io } from 'socket.io-client';
+import { io, Socket } from 'socket.io-client';
 import { config } from '../config';
+import type { ServerToClientEvents, ClientToServerEvents } from 'shared';
 
-export const socket = io(config.apiBaseUrl, {
+export const socket: Socket<ServerToClientEvents, ClientToServerEvents> = io(config.apiBaseUrl, {
   autoConnect: false,
   withCredentials: true,
   reconnection: true,

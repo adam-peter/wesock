@@ -20,8 +20,8 @@ export function useMessages(): {
     setMessages([]);
   }, []);
 
-  useSocketEvent<SerializedMessage>('receive_message', handleReceiveMessage);
-  useSocketEvent<SerializedMessage[]>('load_history', handleLoadHistory);
+  useSocketEvent('receive_message', handleReceiveMessage);
+  useSocketEvent('load_history', handleLoadHistory);
 
   return { messages, clearMessages };
 }
