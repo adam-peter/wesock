@@ -22,13 +22,18 @@ export async function createMessage(
   return messageSchema.parse(result);
 }
 
-export async function getMessages(roomId: string, limit: number = MESSAGE_HISTORY_LIMIT): Promise<Message[]> {
+export async function getMessages(
+  roomId: string,
+  limit = MESSAGE_HISTORY_LIMIT,
+  offset = 0
+): Promise<Message[]> {
   const result = await db
     .select()
     .from(messages)
     .where(eq(messages.roomId, roomId))
     .orderBy(desc(messages.createdAt))
-    .limit(limit);
+    .limit(limit)
+    .offset(offset);
 
   return messageSchema.array().parse(result);
 }

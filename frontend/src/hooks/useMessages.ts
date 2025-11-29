@@ -5,6 +5,7 @@ import type { SerializedMessage } from 'shared';
 export function useMessages(): {
   messages: SerializedMessage[];
   clearMessages: () => void;
+  loadMoreMessages: (newMessages: SerializedMessage[]) => void;
 } {
   const [messages, setMessages] = useState<SerializedMessage[]>([]);
 
@@ -16,6 +17,10 @@ export function useMessages(): {
     setMessages(history);
   }, []);
 
+  const loadMoreMessages = useCallback((newMessages: SerializedMessage[]): void => {
+    setMessages((prev) => [...newMessages, ...prev]);
+  }, []);
+
   const clearMessages = useCallback((): void => {
     setMessages([]);
   }, []);
@@ -23,5 +28,5 @@ export function useMessages(): {
   useSocketEvent('receive_message', handleReceiveMessage);
   useSocketEvent('load_history', handleLoadHistory);
 
-  return { messages, clearMessages };
+  return { messages, clearMessages, loadMoreMessages };
 }

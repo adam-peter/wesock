@@ -12,9 +12,10 @@ export async function saveMessage(
 
 export async function loadMessageHistory(
   roomId: string,
-  limit: number = MESSAGE_HISTORY_LIMIT
+  limit = MESSAGE_HISTORY_LIMIT,
+  offset = 0
 ): Promise<Message[]> {
-  return await getMessages(roomId, limit);
+  return await getMessages(roomId, limit, offset);
 }
 
 export function serializeMessage(message: Message): SerializedMessage {

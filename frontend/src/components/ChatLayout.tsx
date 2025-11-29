@@ -14,6 +14,7 @@ interface ChatLayoutProps {
   users: OnlineUser[];
   onSendMessage: (content: string) => void;
   onLogout: () => void;
+  onLoadMore: (messages: SerializedMessage[]) => void;
 }
 
 export function ChatLayout({
@@ -23,6 +24,7 @@ export function ChatLayout({
   users,
   onSendMessage,
   onLogout,
+  onLoadMore,
 }: ChatLayoutProps) {
   const [messageInput, setMessageInput] = useState('');
   const [copied, setCopied] = useState(false);
@@ -70,7 +72,7 @@ export function ChatLayout({
           <ModeToggle />
         </div>
 
-        <MessageList messages={messages} />
+        <MessageList messages={messages} roomId={roomId} onLoadMore={onLoadMore} />
 
         <div className="border-t bg-background p-4">
           <form onSubmit={handleSubmit} className="flex gap-2">

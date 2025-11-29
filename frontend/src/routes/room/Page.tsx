@@ -12,7 +12,7 @@ export default function RoomPage() {
 
   const currentRoomId = roomId || 'global';
 
-  const { messages, clearMessages } = useMessages();
+  const { messages, clearMessages, loadMoreMessages } = useMessages();
   const users = useUsers();
 
   useSocketConnection({
@@ -42,6 +42,7 @@ export default function RoomPage() {
       users={users}
       onSendMessage={handleSendMessage}
       onLogout={handleLogout}
+      onLoadMore={loadMoreMessages}
     />
   );
 }
