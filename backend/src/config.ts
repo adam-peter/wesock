@@ -1,7 +1,5 @@
 import type { MigrationConfig } from 'drizzle-orm/migrator';
-import { envOrThrow } from 'shared';
-
-export type Platform = 'dev' | 'prod'
+import { envOrThrow, type Platform } from 'shared';
 
 interface DBConfig {
   url: string;
