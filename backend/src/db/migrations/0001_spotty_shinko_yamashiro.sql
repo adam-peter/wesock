@@ -1,0 +1,1 @@
+ALTER TABLE "messages" ADD COLUMN "is_global" boolean DEFAULT false NOT NULL;
