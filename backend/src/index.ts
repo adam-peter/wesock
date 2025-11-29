@@ -10,23 +10,29 @@ app.get('/healthz', (_req, res) => {
   res.status(200).send({ status: 'ok' });
 });
 
-app.use(cors({
-  origin: (origin, callback) => {
-    if (!origin) {
-      console.log('CORS blocked: request with no origin');
-      callback(new Error('Not allowed by CORS'));
-      return;
-    }
-    
-    if (config.allowedOrigins.includes(origin)) {
-      callback(null, true);
-    } else {
-      console.log(`CORS blocked origin: ${origin}`);
-      callback(new Error('Not allowed by CORS'));
-    }
-  },
-  credentials: true,
-}));
+app.use((req, res, next) => {
+  if (req.path === '/healthz') {
+    return next();
+  }
+
+  cors({
+    origin: (origin, callback) => {
+      if (!origin) {
+        console.log('CORS blocked: request with no origin');
+        callback(new Error('Not allowed by CORS'));
+        return;
+      }
+
+      if (config.allowedOrigins.includes(origin)) {
+        callback(null, true);
+      } else {
+        console.log(`CORS blocked origin: ${origin}`);
+        callback(new Error('Not allowed by CORS'));
+      }
+    },
+    credentials: true,
+  })(req, res, next);
+});
 
 app.use(express.json());
 
