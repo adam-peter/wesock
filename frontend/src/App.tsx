@@ -5,10 +5,20 @@ export default function App() {
   const [message, setMessage] = useState<string>('Loading...');
 
   useEffect(() => {
-    fetch(`${config.apiBaseUrl}/`)
-      .then((res) => res.json())
-      .then((data) => setMessage(data.message))
-      .catch((err) => setMessage(`Error: ${err.message}`));
+    const fetchMessage = async () => {
+      try {
+        const res = await fetch(`${config.apiBaseUrl}/`);
+        const data = await res.json();
+        setMessage(data.message);
+      } catch (err) {
+        console.error(err);
+        setMessage(
+          `Error: ${err instanceof Error ? err.message : 'Unknown error'}`
+        );
+      }
+    };
+
+    fetchMessage();
   }, []);
 
   return (
