@@ -8,12 +8,12 @@ import {
 import { ScrollArea } from './ui/scroll-area';
 import { Skeleton } from './ui/skeleton';
 import { socket } from '../lib/socket';
-import type { SerializedMessage, LoadMoreMessagesPayload } from 'shared';
+import type { AnySerializedMessage, LoadMoreMessagesPayload } from 'shared';
 
 interface MessageListProps {
-  messages: SerializedMessage[];
+  messages: AnySerializedMessage[];
   roomId: string;
-  onLoadMore: (messages: SerializedMessage[]) => void;
+  onLoadMore: (messages: AnySerializedMessage[]) => void;
 }
 
 export function MessageList({
@@ -171,17 +171,27 @@ export function MessageList({
           </div>
         )}
 
-        {messages.map((msg) => (
-          <div key={msg.id} className="bg-muted/50 rounded-lg p-3">
-            <div className="font-semibold text-sm text-primary">
-              {msg.senderNick}
+        {messages.map((msg) => {
+          if (msg.type === 'system') {
+            return (
+              <div key={msg.id} className="text-center text-sm text-muted-foreground/60 italic py-1">
+                {msg.content}
+              </div>
+            );
+          }
+
+          return (
+            <div key={msg.id} className="bg-muted/50 rounded-lg p-3">
+              <div className="font-semibold text-sm text-primary">
+                {msg.senderNick}
+              </div>
+              <div className="text-foreground mt-1">{msg.content}</div>
+              <div className="text-xs text-muted-foreground mt-1">
+                {new Date(msg.createdAt).toLocaleTimeString()}
+              </div>
             </div>
-            <div className="text-foreground mt-1">{msg.content}</div>
-            <div className="text-xs text-muted-foreground mt-1">
-              {new Date(msg.createdAt).toLocaleTimeString()}
-            </div>
-          </div>
-        ))}
+          );
+        })}
 
         <div ref={messagesEndRef} />
       </div>

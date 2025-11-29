@@ -4,17 +4,17 @@ import { Input } from './ui/input';
 import { MessageList } from './MessageList';
 import { UserList } from './UserList';
 import { MobileMenu } from './MobileMenu';
-import type { SerializedMessage, OnlineUser } from 'shared';
+import type { AnySerializedMessage, OnlineUser } from 'shared';
 import { ModeToggle } from './mode-toggle';
 
 interface ChatLayoutProps {
   nickname: string;
   roomId: string;
-  messages: SerializedMessage[];
+  messages: AnySerializedMessage[];
   users: OnlineUser[];
   onSendMessage: (content: string) => void;
   onLogout: () => void;
-  onLoadMore: (messages: SerializedMessage[]) => void;
+  onLoadMore: (messages: AnySerializedMessage[]) => void;
 }
 
 export function ChatLayout({

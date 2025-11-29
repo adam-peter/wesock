@@ -1,12 +1,12 @@
 import { z } from 'zod';
-import { serializedMessageSchema, sendMessageDtoSchema, type SendMessageDto, type SerializedMessage } from './message';
+import { anySerializedMessageSchema, sendMessageDtoSchema, type SendMessageDto, type AnySerializedMessage } from './message';
 import { joinRoomDtoSchema, userListUpdateSchema, type JoinRoomDto, type UserListUpdate } from './user';
 
 export { sendMessageDtoSchema, joinRoomDtoSchema };
 
-export const loadHistoryPayloadSchema = z.array(serializedMessageSchema);
+export const loadHistoryPayloadSchema = z.array(anySerializedMessageSchema);
 
-export const receiveMessagePayloadSchema = serializedMessageSchema;
+export const receiveMessagePayloadSchema = anySerializedMessageSchema;
 
 export const userListUpdatePayloadSchema = userListUpdateSchema;
 
@@ -19,7 +19,7 @@ export const loadMoreMessagesDtoSchema = z
   .strict();
 
 export const loadMoreMessagesPayloadSchema = z.object({
-  messages: z.array(serializedMessageSchema),
+  messages: z.array(anySerializedMessageSchema),
   hasMore: z.boolean(),
 });
 
@@ -37,8 +37,8 @@ export interface ClientToServerEvents {
 
 export interface ServerToClientEvents {
   user_list_update: (data: UserListUpdate) => void;
-  load_history: (messages: SerializedMessage[]) => void;
-  receive_message: (message: SerializedMessage) => void;
+  load_history: (messages: AnySerializedMessage[]) => void;
+  receive_message: (message: AnySerializedMessage) => void;
   load_more_messages_response: (data: LoadMoreMessagesPayload) => void;
 }
 

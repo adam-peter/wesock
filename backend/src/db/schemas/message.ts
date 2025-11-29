@@ -11,6 +11,7 @@ const timestamps = {
 
 export const messages = pgTable('messages', {
   id: uuid('id').primaryKey().notNull().defaultRandom(),
+  type: text('type').notNull().default('user'),
   content: text('content').notNull(),
   senderNick: text('sender_nick').notNull(),
   roomId: text('room_id').notNull().default(DEFAULT_ROOM),

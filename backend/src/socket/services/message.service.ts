@@ -1,5 +1,6 @@
 import { createMessage, getMessages } from '../../db/queries/messages';
-import { type Message, type SerializedMessage, MESSAGE_HISTORY_LIMIT } from 'shared';
+import { type Message, type SerializedMessage, type SystemMessage, MESSAGE_HISTORY_LIMIT } from 'shared';
+import { randomUUID } from 'crypto';
 
 export async function saveMessage(
   content: string,
@@ -21,6 +22,7 @@ export async function loadMessageHistory(
 export function serializeMessage(message: Message): SerializedMessage {
   return {
     id: message.id,
+    type: 'user' as const,
     content: message.content,
     senderNick: message.senderNick,
     roomId: message.roomId,
@@ -32,4 +34,14 @@ export function serializeMessage(message: Message): SerializedMessage {
 
 export function serializeMessages(messages: Message[]): SerializedMessage[] {
   return messages.map(serializeMessage);
+}
+
+export function createSystemMessage(content: string, roomId: string): SystemMessage {
+  return {
+    id: randomUUID(),
+    type: 'system' as const,
+    content,
+    roomId,
+    createdAt: new Date().toISOString(),
+  };
 }

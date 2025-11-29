@@ -3,6 +3,7 @@ import {
   joinRoomDtoSchema,
   userListUpdatePayloadSchema,
   loadHistoryPayloadSchema,
+  receiveMessagePayloadSchema,
   type OnlineUser,
   type ClientToServerEvents,
   type ServerToClientEvents,
@@ -10,7 +11,7 @@ import {
   type SocketData,
 } from 'shared';
 import { addUser, removeUser, getUsersByRoom } from '../services/user.service';
-import { loadMessageHistory, serializeMessages } from '../services/message.service';
+import { loadMessageHistory, serializeMessages, createSystemMessage } from '../services/message.service';
 
 type TypedServer = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
 type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
@@ -74,6 +75,15 @@ async function handleJoinRoom(
       console.error('History payload validation error:', historyPayloadResult.error);
     }
 
+    const systemMessage = createSystemMessage(`${dto.nick} joined`, dto.roomId);
+    const systemMessagePayloadResult = receiveMessagePayloadSchema.safeParse(systemMessage);
+
+    if (systemMessagePayloadResult.success) {
+      io.to(dto.roomId).emit('receive_message', systemMessagePayloadResult.data);
+    } else {
+      console.error('System message payload validation error:', systemMessagePayloadResult.error);
+    }
+
     callback?.();
   } catch (err) {
     console.error('Error in handleJoinRoom:', err);
@@ -99,5 +109,14 @@ function handleDisconnect(io: TypedServer, socket: TypedSocket): void {
     io.to(user.roomId).emit('user_list_update', userListPayloadResult.data);
   } else {
     console.error('User list payload validation error:', userListPayloadResult.error);
+  }
+
+  const systemMessage = createSystemMessage(`${user.nick} left`, user.roomId);
+  const systemMessagePayloadResult = receiveMessagePayloadSchema.safeParse(systemMessage);
+
+  if (systemMessagePayloadResult.success) {
+    io.to(user.roomId).emit('receive_message', systemMessagePayloadResult.data);
+  } else {
+    console.error('System message payload validation error:', systemMessagePayloadResult.error);
   }
 }
