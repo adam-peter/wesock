@@ -7,7 +7,7 @@ interface MessageListProps {
 
 export function MessageList({ messages }: MessageListProps) {
   return (
-    <ScrollArea className="flex-1 p-4">
+    <ScrollArea className="flex-1 p-4 min-h-0">
       <div className="space-y-3">
         {messages.map((msg) => (
           <div key={msg.id} className="bg-muted/50 rounded-lg p-3">

@@ -7,7 +7,7 @@ interface UserListProps {
 
 export function UserList({ users }: UserListProps) {
   return (
-    <ScrollArea className="h-full p-4">
+    <ScrollArea className="flex-1 p-4 min-h-0">
       <h3 className="font-semibold mb-3 text-sm text-muted-foreground">Online Users</h3>
       <div className="space-y-2">
         {users.map((user) => (

@@ -83,7 +83,7 @@ export function ChatLayout({
         </div>
       </div>
 
-      <div className="w-[15%] border-l bg-muted/50">
+      <div className="w-[15%] border-l bg-muted/50 flex flex-col">
         <UserList users={users} />
       </div>
     </div>
