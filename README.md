@@ -2,6 +2,10 @@
 
 ![WeSock](wesock.png)
 
+[https://wesock.vercel.app/](https://wesock.vercel.app/)
+NOTE ABOUT ONLINE DEPLOYMENT: The database is currently hosted in a free-tier Neon serverless project. This project turns off after a while of no usage. This means when running the app initially, you have to wait around 5sec for the database to load (turns off after couple of hours of no usage).
+
+
 WeSock is a FOSS real-time chat application built to be accessible and freely usable for everyone. It is built with a modern TypeScript stack, utilizing scalable WebSocket patterns, strict type safety, and a clean monorepo architecture.
 
 WeSock features ephemeral users, persistent room history, and real-time updates, all powered by a robust event-driven backend.
