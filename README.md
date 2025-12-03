@@ -3,6 +3,7 @@
 ![WeSock](wesock.png)
 
 [https://wesock.vercel.app/](https://wesock.vercel.app/)
+
 NOTE ABOUT ONLINE DEPLOYMENT: The backend is currently hosted in a free-tier Render serverless project. This project turns off with inactivity. This means when running the app initially, you have to wait around 5sec for the backend to load.
 
 
