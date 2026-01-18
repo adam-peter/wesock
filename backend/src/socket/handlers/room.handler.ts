@@ -10,16 +10,40 @@ import {
   type InterServerEvents,
   type SocketData,
 } from 'shared';
-import { addUser, removeUser, getUsersByRoom } from '../services/user.service';
-import { loadMessageHistory, serializeMessages, createSystemMessage } from '../services/message.service';
+import {
+  addUser,
+  removeUser,
+  getUsersByRoom,
+} from '../../socket/services/user.service';
+import {
+  loadMessageHistory,
+  serializeMessages,
+  createSystemMessage,
+} from '../../socket/services/message.service';
 
-type TypedServer = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
-type TypedSocket = Socket<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+type TypedServer = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
+type TypedSocket = Socket<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
 
-export function registerRoomHandlers(io: TypedServer, socket: TypedSocket): void {
-  socket.on('join_room', async (data: unknown, callback?: (error?: string) => void) => {
-    await handleJoinRoom(io, socket, data, callback);
-  });
+export function registerRoomHandlers(
+  io: TypedServer,
+  socket: TypedSocket,
+): void {
+  socket.on(
+    'join_room',
+    async (data: unknown, callback?: (error?: string) => void) => {
+      await handleJoinRoom(io, socket, data, callback);
+    },
+  );
 
   socket.on('disconnect', () => {
     handleDisconnect(io, socket);
@@ -30,7 +54,7 @@ async function handleJoinRoom(
   io: TypedServer,
   socket: TypedSocket,
   data: unknown,
-  callback?: (error?: string) => void
+  callback?: (error?: string) => void,
 ): Promise<void> {
   try {
     const dto = joinRoomDtoSchema.parse(data);
@@ -52,11 +76,14 @@ async function handleJoinRoom(
 
     const dbMessages = await loadMessageHistory(dto.roomId);
     const serializedMessages = serializeMessages(dbMessages);
-    const historyPayload = loadHistoryPayloadSchema.parse(serializedMessages.reverse());
+    const historyPayload = loadHistoryPayloadSchema.parse(
+      serializedMessages.reverse(),
+    );
     socket.emit('load_history', historyPayload);
 
     const systemMessage = createSystemMessage(`${dto.nick} joined`, dto.roomId);
-    const systemMessagePayload = receiveMessagePayloadSchema.parse(systemMessage);
+    const systemMessagePayload =
+      receiveMessagePayloadSchema.parse(systemMessage);
     io.to(dto.roomId).emit('receive_message', systemMessagePayload);
 
     callback?.();
@@ -83,7 +110,8 @@ function handleDisconnect(io: TypedServer, socket: TypedSocket): void {
     io.to(user.roomId).emit('user_list_update', userListPayload);
 
     const systemMessage = createSystemMessage(`${user.nick} left`, user.roomId);
-    const systemMessagePayload = receiveMessagePayloadSchema.parse(systemMessage);
+    const systemMessagePayload =
+      receiveMessagePayloadSchema.parse(systemMessage);
     io.to(user.roomId).emit('receive_message', systemMessagePayload);
   } catch (err) {
     console.error('Error in handleDisconnect:', err);

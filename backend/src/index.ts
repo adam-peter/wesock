@@ -18,7 +18,12 @@ import { startCleanupInterval } from './socket/services/cleanup.service';
 const PORT = 3000;
 const app = express();
 const server = createServer(app);
-const io = new Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>(server, {
+const io = new Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>(server, {
   cors: {
     origin: config.allowedOrigins,
     credentials: true,
@@ -57,7 +62,9 @@ app.get('/healthz', (_req, res) => {
 });
 
 app.get('/', (_req, res) => {
-  res.status(200).send({message: PLACEHOLDER, from: `From: ${config.platform}`});
+  res
+    .status(200)
+    .send({ message: PLACEHOLDER, from: `From: ${config.platform}` });
 });
 
 app.use(middlewareErrors);

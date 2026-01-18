@@ -8,7 +8,12 @@ import {
 import { registerMessageHandlers } from './handlers/message.handler';
 import { registerRoomHandlers } from './handlers/room.handler';
 
-type TypedServer = Server<ClientToServerEvents, ServerToClientEvents, InterServerEvents, SocketData>;
+type TypedServer = Server<
+  ClientToServerEvents,
+  ServerToClientEvents,
+  InterServerEvents,
+  SocketData
+>;
 
 export function setupSocketHandlers(io: TypedServer): void {
   io.on('connection', (socket) => {
